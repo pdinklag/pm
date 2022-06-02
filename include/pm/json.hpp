@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _PM_JSON_HPP
+#define _PM_JSON_HPP
 
 #include <nlohmann/json.hpp>
 
@@ -25,3 +26,5 @@ constexpr char const* JSON_KEY_METRICS = "metrics";
 constexpr char const* JSON_KEY_NAME = "name";
 
 }
+
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _PM_NOOP_PHASE_HPP
+#define _PM_NOOP_PHASE_HPP
 
 #include <pm/concepts.hpp>
 
@@ -97,3 +98,5 @@ public:
 };
 
 }
+
+#endif

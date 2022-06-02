@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _PM_MALLOC_COUNTER_HPP
+#define _PM_MALLOC_COUNTER_HPP
 
 #include <algorithm>
 #include <cstdint>
@@ -196,3 +197,5 @@ public:
 };
 
 }
+
+#endif

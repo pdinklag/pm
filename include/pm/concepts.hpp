@@ -1,5 +1,5 @@
-#ifndef _PM_CONCEPTS
-#define _PM_CONCEPTS
+#ifndef _PM_CONCEPTS_HPP
+#define _PM_CONCEPTS_HPP
 
 #include <concepts>
 #include <string>

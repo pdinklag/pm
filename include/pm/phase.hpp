@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _PM_PHASE_HPP
+#define _PM_PHASE_HPP
 
 #include <string>
 #include <tuple>
@@ -215,3 +216,5 @@ public:
 };
 
 }
+
+#endif

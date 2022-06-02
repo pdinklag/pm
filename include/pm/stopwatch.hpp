@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _PM_STOPWATCH_HPP
+#define _PM_STOPWATCH_HPP
 
 #include <chrono>
 
@@ -111,3 +112,5 @@ public:
 };
 
 }
+
+#endif
