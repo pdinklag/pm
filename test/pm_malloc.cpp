@@ -4,7 +4,6 @@
 #include <thread>
 
 #include <pm.hpp>
-#include <pm/result.hpp>
 
 namespace pm::test {
 
@@ -141,33 +140,6 @@ TEST_SUITE("pm_malloc") {
 
         CHECK(phase.meter<1>().elapsed_time_millis() >= 10);
         CHECK(phase.meter<0>().peak() == 1024);
-    }
-
-    TEST_CASE("Result") {
-        SUBCASE("primitive") {
-            Result r;
-            r.add("str", "test");
-            r.add("int", -1337);
-            r.add("double", 3.125); // use something that is unlikely to cause rounding errors on any system
-            r.add("bool", false);
-            r.sort();
-            CHECK(r.str() == "RESULT bool=false double=3.125 int=-1337 str=test");
-        }
-
-        SUBCASE("phase") {
-            TimePhase phase("test");
-            phase.start();
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            phase.stop();
-            phase.data()["int"] = -1337;
-
-            Result r;
-            r.add(phase);
-            r.sort();
-
-            // nb: we cannot match the exact output here, because the sleep introduces randomness
-            CHECK(r.str().starts_with("RESULT data.int=-1337 metrics.time="));
-        }
     }
 }
 

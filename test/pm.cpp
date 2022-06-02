@@ -4,7 +4,6 @@
 #include <thread>
 
 #include <pm.hpp>
-#include <pm/result.hpp>
 
 namespace pm::test {
 
