@@ -119,16 +119,6 @@ public:
     }
 
     /**
-     * \brief Does nothing
-     * 
-     * It is expected that parent malloc counters live at least as long as their children and thus receive the same allocation and free callbacks.
-     * 
-     * \param parent the parent counter
-     */
-    inline void propagate(MallocCounter& parent) {
-    }
-
-    /**
      * \brief The current number of allocated bytes
      * 
      * Note that this may be negative if the counter has seen frees, but not the corresponding allocations.

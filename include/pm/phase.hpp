@@ -55,14 +55,6 @@ private:
     template<size_t I> auto const& get() const { return std::get<I>(meters_); }
 
     template<size_t I = 0>
-    void propagate_meters(Phase& parent) {
-        if constexpr(I < num_meters()) {
-            get<I>().propagate(std::get<I>(parent.meters_));
-            propagate_meters<I+1>(parent);
-        }
-    }
-
-    template<size_t I = 0>
     void start_meters() {
         if constexpr(I < num_meters()) {
             get<I>().start();
@@ -149,8 +141,7 @@ public:
     /**
      * \brief Appends the given phase as a child of this phase
      * 
-     * The child's meters will be propagated to this phase's meters, afterwards the child's data
-     * is gathered into this phase's JSON data storage.
+     * The child's data is gathered into this phase's JSON data storage.
      * 
      * \param child the child phase to append
      */

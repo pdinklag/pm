@@ -142,9 +142,6 @@ concept JSONMeasurementPhase =
  * Furthermore, data can be gathered into a \ref pm::DataStorage "DataStorage" of the specified type using `gather_metrics`.
  * The function `key` must provide a string that identifies a type of measurement uniquely in a data storage.
  * 
- * When a \ref pm::MeasurementPhase "measurement phase" is appended as a child to a parent phase,
- * all meter that belong to the phase may be propagated to a parent meter using `propagate`.
- * 
  * \tparam T the type in question
  * \tparam D the data storage type
  */
@@ -162,9 +159,6 @@ concept Meter =
     requires(T const x) {
         { x.key() } -> std::same_as<std::string>;
         { x.gather_metrics() } -> std::same_as<D>;
-    } &&
-    requires(T x, T& parent) {
-        { x.propagate(parent) };
     };
 
 }

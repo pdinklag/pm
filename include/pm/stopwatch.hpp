@@ -72,17 +72,6 @@ public:
     }
 
     /**
-     * \brief Does nothing
-     * 
-     * Because time kept running even for any supposed parent stopwatch, no propagation is required.
-     * 
-     * \param parent the parent stopwatch
-     */
-    inline void propagate(Stopwatch& parent) {
-        // nb: no propagation needed as time kepts ticking for parent as well
-    }
-
-    /**
      * \brief Reports the measured elapsed time in nanosecond precision
      * 
      * \return uintmax_t the measured elapsed time in nanosecond precision
