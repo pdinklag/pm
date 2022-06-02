@@ -4,6 +4,7 @@
 #include <pm/phase.hpp>
 #include <pm/malloc_counter.hpp>
 #include <pm/noop_phase.hpp>
+#include <pm/result.hpp>
 #include <pm/stopwatch.hpp>
 
 namespace pm {
