@@ -29,8 +29,9 @@ private:
         };
 
     public:
-        IgnoreAssignment operator[](std::string&&) { return IgnoreAssignment{}; }
-        nlohmann::json operator[](std::string const&) const { return {}; }
+        inline IgnoreAssignment operator[](std::string&&) { return IgnoreAssignment{}; }
+        inline nlohmann::json operator[](std::string const&) const { return {}; }
+        inline std::string dump(int = 0) { return {}; }
     };
 
     static constexpr NoData nothing_ = {};
