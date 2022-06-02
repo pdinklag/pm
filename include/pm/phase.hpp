@@ -154,8 +154,8 @@ public:
      * 
      * \param child the child phase to append
      */
-    void append_child(Phase&& child) {
-        child.propagate_meters(*this);
+    template<JSONMeasurementPhase T>
+    void append_child(T const& child) {
         children_.emplace_back(child.gather_data());
     }
 
