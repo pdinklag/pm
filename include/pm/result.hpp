@@ -191,11 +191,10 @@ public:
      * Keys contain the dot (`.`) character to indicate the JSON structure.
      * The output may thus become very verbose and no longer human readable.
      * 
-     * \tparam T the phase type; supports any \ref pm::MeasurementPhase "measurement phase" that returns a JSON data storage
+     * \tparam T the phase type; supports any \ref pm::JSONMeasurementPhase "JSON measurement phase"
      * \param data the data of a \ref Phase
      */
-    template<MeasurementPhase T>
-    requires ( requires(T const x) { { x.gather_data() } -> std::same_as<nlohmann::json>; } )
+    template<JSONMeasurementPhase T>
     inline void add(T const& phase) {
         add_phase_data("", phase.gather_data());
     }

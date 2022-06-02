@@ -117,11 +117,22 @@ concept MeasurementPhase =
         { x.stop() };
         { x.data() } -> DataStorage;
     } &&
-    requires(T x, T&& child) {
-        { x.append_child(std::move(child)) };
-    } &&
     requires(T const x) {
         { x.gather_data() } -> ReadableDataStorage;
+    };
+
+/**
+ * \brief Extended version of the \ref pm::MeasurementPhase concept for JSON data storages
+ * 
+ * This concept additionally requires that the `gather_data` function returns a JSON data storage.
+ * 
+ * \tparam T the type in question
+ */
+template<typename T>
+concept JSONMeasurementPhase =
+    MeasurementPhase<T> &&
+    requires(T const x) {
+        { x.gather_data() } -> std::same_as<nlohmann::json>;
     };
 
 /**
