@@ -2,8 +2,6 @@
 
 This library provides an extensible high-level API for measuring performance data of C++20 applications.
 
-[TOC]
-
 ## Documentation
 
 The governing concept of pm is *phase-based* measurements using *meters*. The programmer defines phases of their application during which a selection of meters measure performance data. Consider the following simple example, where we measure the memory allocations and the required time of a rather simple computation:
