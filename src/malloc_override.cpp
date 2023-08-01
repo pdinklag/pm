@@ -4,7 +4,7 @@
  * 
  * MIT License
  * 
- * Copyright (c) 2022 Patrick Dinklage
+ * Copyright (c) 2022-2023 Patrick Dinklage
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
+#ifdef _WIN32
+
+#pragma message "The malloc override is not supported on Windows. Memory measurements will not work and always report zero."
+
+#else
 
 #define GNU_SOURCE
 
@@ -111,3 +117,5 @@ extern "C" void* calloc(size_t num, size_t size) {
 }
 
 // TODO: aligned_alloc
+
+#endif
