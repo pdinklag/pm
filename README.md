@@ -187,7 +187,7 @@ We see that the list `children` has been added to the JSON object, which contain
 ```
 MIT License
 
-Copyright (c) 2022 Patrick Dinklage
+Patrick Dinklage
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
