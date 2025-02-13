@@ -35,19 +35,26 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <cstdint>
 #include <pm/malloc/hook.hpp>
 
 extern "C" void* __libc_malloc(size_t);
 extern "C" void  __libc_free(void*);
 extern "C" void* __libc_realloc(void*, size_t);
+extern "C" void* __libc_memalign(size_t, size_t);
 
 static_assert(sizeof(char) == 1); // sanity
 
-constexpr size_t MEMBLOCK_MAGIC = 0xFEDCBA9876543210;
+constexpr uint64_t MEMBLOCK_MAGIC = 0xFEDCBA9876543210ULL;
+
+constexpr size_t idiv_ceil(size_t const a, size_t const b) {
+    return ((a + b) - 1ULL) / b;
+}
 
 struct BlockHeader {
-    size_t magic;
-    size_t size;
+    uint64_t magic; // if equal to MEMBLOCK_MAGIC, this block will be considered "managed"
+    size_t size;    // the size of the allocated data
+    size_t offset;  // the number of allocated bytes preceding the header (0 for usual allocations, possibly >0 for aligned allocations)
 };
 
 inline bool is_managed(BlockHeader* block) {
@@ -63,10 +70,40 @@ extern "C" void* malloc(size_t size) {
     auto block = (BlockHeader*)ptr;
     block->magic = MEMBLOCK_MAGIC;
     block->size = size;
+    block->offset = 0;
 
     pm::malloc_hook::on_malloc(size);
 
     return (char*)ptr + sizeof(BlockHeader);
+}
+
+extern "C" void* aligned_alloc(size_t alignment, size_t size) {
+    if(!size || !alignment) return NULL;
+
+    auto const aligned_header_size = idiv_ceil(sizeof(BlockHeader), alignment) * alignment;
+
+    void *ptr = __libc_memalign(alignment, size + aligned_header_size);
+    if(!ptr) return ptr; // aligned_alloc failed
+
+    auto const offset = (aligned_header_size - sizeof(BlockHeader));
+
+    auto block = (BlockHeader*)((char*)ptr + offset);
+    block->magic = MEMBLOCK_MAGIC;
+    block->size = size;
+    block->offset = offset;
+
+    pm::malloc_hook::on_malloc(size);
+
+    return (char*)ptr + aligned_header_size;
+}
+
+extern "C" int posix_memalign(void **memptr, size_t alignment, size_t size) {
+    *memptr = aligned_alloc(alignment, size);
+    return 0;
+}
+
+extern "C" void *memalign(size_t alignment, size_t size) {
+    return aligned_alloc(alignment, size);
 }
 
 extern "C" void free(void* ptr) {
@@ -75,7 +112,7 @@ extern "C" void free(void* ptr) {
     auto block = (BlockHeader*)((char*)ptr - sizeof(BlockHeader));
     if(is_managed(block)) {
         pm::malloc_hook::on_free(block->size);
-        __libc_free(block);
+        __libc_free((char*)block - block->offset);
     } else {
         __libc_free(ptr);
     }
@@ -115,7 +152,5 @@ extern "C" void* calloc(size_t num, size_t size) {
     memset(ptr, 0, size);
     return ptr;
 }
-
-// TODO: aligned_alloc
 
 #endif
