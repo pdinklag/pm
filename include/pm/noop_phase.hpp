@@ -38,6 +38,11 @@ namespace pm {
  * This class is intended to be used as a replacement of \ref Phase for when all statistics measurement is to be optimized out at compile time.
  * All functions are implemented as no-ops and should thus be completely optimized away by a compiler with proper optimization set.
  * 
+ * The following is an example usage, assuming the existence of a `constexpr` function `is_release_build`:
+ * \code{cpp}
+ * using Phase = std::conditional_t<is_release_build(), pm::NoopPhase, pm::MemoryTimePhase>;
+ * \endcode
+ * 
  * This class satisfies the \ref pm::MeasurementPhase "MeasurementPhase" concept and provides a JSON data storage.
  */
 class NoopPhase {
