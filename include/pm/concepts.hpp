@@ -35,6 +35,12 @@
 
 namespace pm {
 
+namespace internal {
+    struct DummyMetric {
+        using MetricValue = int;
+    };
+}
+
 /**
  * \brief Concept for string-keyed dictionaries that allow read access
  * 
@@ -145,6 +151,7 @@ concept MeasurementPhase =
         { x.data() } -> DataStorage;
     } &&
     requires(T const x) {
+        { x.template get_metric<internal::DummyMetric>() };
         { x.gather_data() } -> ReadableDataStorage;
     };
 
@@ -166,6 +173,7 @@ concept JSONMeasurementPhase =
  * \brief Concept for statistics measuring devices
  * 
  * A meter can be started, paused, resumed and stopped using correspondingly named operations.
+ * The static function `has_metric` reports whether the given metric is supported by this meter and can be read using `get_metric`.
  * Furthermore, data can be gathered into a \ref pm::DataStorage "DataStorage" of the specified type using `gather_metrics`.
  * The function `key` must provide a string that identifies a type of measurement uniquely in a data storage.
  * 
@@ -177,6 +185,9 @@ concept Meter =
     ReadableDataStorage<D> &&
     std::constructible_from<T> &&
     std::movable<T> &&
+    requires {
+        { T::template has_metric<internal::DummyMetric>() } -> std::same_as<bool>;
+    } &&
     requires(T x) {
         { x.start() };
         { x.pause() };
@@ -185,8 +196,21 @@ concept Meter =
     } &&
     requires(T const x) {
         { x.key() } -> std::same_as<std::string>;
+        { x.template get_metric<internal::DummyMetric>() };
         { x.gather_metrics() } -> std::same_as<D>;
     };
+
+/**
+ * \brief Concept for metrics.
+ * 
+ * In order to satisfy this concept, a type must declare a public type `MetricValue`.
+ * 
+ * \tparam T the type in question
+ */
+template<typename T>
+concept Metric = std::default_initializable<T> && requires {
+    typename T::MetricValue;
+};
 
 }
 

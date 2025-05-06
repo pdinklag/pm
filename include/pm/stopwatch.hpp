@@ -30,6 +30,7 @@
 
 #include <chrono>
 
+#include <pm/concepts.hpp>
 #include <nlohmann/json.hpp>
 
 namespace pm {
@@ -42,6 +43,28 @@ namespace pm {
  * This class satisfies the \ref pm::Meter "Meter" concept for gathering data in JSON data storages.
  */
 class Stopwatch {
+public:
+    /**
+     * \brief The metric for elapsed stopwatch time in millseconds.
+     */
+    struct ElapsedTimeMillisMetric { using MetricValue = double; };
+
+    /**
+     * \brief The metric for elapsed stopwatch time in nanoseconds.
+     */
+    struct ElapsedTimeNanosMetric { using MetricValue = uintmax_t; };
+
+    /**
+     * \brief Tests whether the given metric is available for this kind of meter
+     * 
+     * \tparam M the metric in question
+     */
+    template<Metric M>
+    static constexpr bool has_metric() {
+        return std::is_same_v<M, ElapsedTimeMillisMetric> ||
+            std::is_same_v<M, ElapsedTimeNanosMetric>;
+    }
+
 private:
     using Clock = std::chrono::high_resolution_clock;
     using Time = Clock::time_point;
@@ -111,6 +134,23 @@ public:
      * \return uintmax_t the measured elapsed time in seconds
      */
     double elapsed_time_millis() const { return std::chrono::duration<double, std::milli>(elapsed_).count(); }
+
+    /**
+     * \brief Gets the given metric from this meter, if available
+     * 
+     * \tparam M the metric in question
+     * \return the value of the metric, or a default value if not available
+     */
+    template<Metric M>
+    M::MetricValue get_metric() const {
+        if constexpr(std::is_same_v<M, ElapsedTimeMillisMetric>) {
+            return elapsed_time_millis();
+        } else if constexpr(std::is_same_v<M, ElapsedTimeNanosMetric>) {
+            return elapsed_time_nanos();
+        } else {
+            return typename M::MetricValue{};
+        }
+    }
 
     /**
      * \brief The key for identifying this measurement in a data storage

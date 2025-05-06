@@ -81,6 +81,7 @@ public:
      * 
      * A no-op phase has no meters.
      */
+    [[deprecated]]
     static constexpr bool has_meters() { return false; }
 
     /**
@@ -118,6 +119,14 @@ public:
      * \brief No-op
      */
     inline void append_child(NoopPhase&&) {}
+
+    /**
+     * \brief Returns the default value for the given metric
+     * 
+     * \tparam X the metric in question
+     */
+    template<Metric X>
+    X::MetricValue get_metric() const { return typename X::MetricValue{}; }
 
     /**
      * \brief Returns a dummy data storage for which all accesses result in no-ops

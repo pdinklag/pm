@@ -75,6 +75,7 @@ public:
      * \return true if at least one measurement has been declared
      * \return false if no measurement has been declared (`Phase<>`)
      */
+    [[deprecated("direct access to meters is not recommended")]]
     static constexpr bool has_meters() { return num_meters() > 0; }
 
 private:
@@ -119,6 +120,19 @@ private:
             auto& m = get<I>();
             metrics[m.key()] = m.gather_metrics();
             gather_metrics<I+1>(metrics);
+        }
+    }
+
+    template<Metric X, size_t I>
+    X::MetricValue get_metric() const {
+        if(I < num_meters()) {
+            if constexpr(std::tuple_element_t<I, decltype(meters_)>::template has_metric<X>()) {
+                return get<I>().template get_metric<X>();
+            } else {
+                return get_metric<X, I+1>();
+            }
+        } else {
+            return typename X::MetricValue{};
         }
     }
 
@@ -184,7 +198,19 @@ public:
      * \return the `I`-th meter
      */
     template<size_t I>
+    [[deprecated("direct access to meters is not recommended")]]
     auto const& meter() const { return std::get<I>(meters_); }
+
+    /**
+     * \brief Gets the given metric for this phase
+     * 
+     * The metric is retrieved from the first meter that reports to have it.
+     * 
+     * \tparam X the metric to retrieve
+     * \return the value of the metric
+     */
+    template<Metric X>
+    X::MetricValue get_metric() const { return get_metric<X, 0>(); }
 
     /**
      * \brief Provides write access to the JSON data storage
@@ -212,7 +238,7 @@ public:
             json[JSON_KEY_CHILDREN] = std::move(children);
         }
 
-        if constexpr(has_meters()) {
+        if constexpr(num_meters() > 0) {
             nlohmann::json metrics;
             gather_metrics(metrics);
             json[JSON_KEY_METRICS] = std::move(metrics);

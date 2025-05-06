@@ -31,6 +31,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <nlohmann/json.hpp>
+#include <pm/concepts.hpp>
 #include <pm/malloc_callback.hpp>
 
 namespace pm {
@@ -43,6 +44,46 @@ namespace pm {
  * This class satisfies the \ref pm::Meter "Meter" concept for gathering data in JSON data storages.
  */
 class MallocCounter : public MallocCallback {
+public:
+    /**
+     * \brief The metric for the peak number of allocated bytes.
+     */
+    struct MemoryPeakMetric { using MetricValue = uintmax_t; };
+
+    /**
+     * \brief The metric for number of memory allocations.
+     */
+    struct AllocNumMetric { using MetricValue = uintmax_t; };
+
+    /**
+     * \brief The metric for the cumulative number of allocated bytes.
+     */
+    struct AllocBytesMetric { using MetricValue = uintmax_t; };
+
+    /**
+     * \brief The metric for number of memory frees.
+     */
+    struct FreeNumMetric { using MetricValue = uintmax_t; };
+
+    /**
+     * \brief The metric for the cumulative number of freed bytes.
+     */
+    struct FreeBytesMetric { using MetricValue = uintmax_t; };
+
+    /**
+     * \brief Tests whether the given metric is available for this kind of meter
+     * 
+     * \tparam M the metric in question
+     */
+    template<Metric M>
+    static constexpr bool has_metric() {
+        return std::is_same_v<M, MemoryPeakMetric> ||
+            std::is_same_v<M, AllocNumMetric> ||
+            std::is_same_v<M, AllocBytesMetric> ||
+            std::is_same_v<M, FreeNumMetric> ||
+            std::is_same_v<M, FreeBytesMetric>;
+    }
+
 private:
     bool active_;
 
@@ -188,6 +229,29 @@ public:
      * \return the number of bytes freed by tracked memory releases
      */
     uintmax_t free_bytes() const { return free_bytes_; }
+
+    /**
+     * \brief Gets the given metric from this meter, if available
+     * 
+     * \tparam M the metric in question
+     * \return the value of the metric, or a default value if not available
+     */
+    template<Metric M>
+    M::MetricValue get_metric() const {
+        if constexpr(std::is_same_v<M, MemoryPeakMetric>) {
+            return peak();
+        } else if constexpr(std::is_same_v<M, AllocNumMetric>) {
+            return alloc_num();
+        } else if constexpr(std::is_same_v<M, AllocBytesMetric>) {
+            return alloc_bytes();
+        } else if constexpr(std::is_same_v<M, FreeNumMetric>) {
+            return free_num();
+        } else if constexpr(std::is_same_v<M, FreeBytesMetric>) {
+            return free_bytes();
+        } else {
+            return typename M::MetricValue{};
+        }
+    }
 
     /**
      * \brief The key for identifying this measurement in a data storage
