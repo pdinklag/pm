@@ -138,7 +138,7 @@ public:
     Phase& operator=(Phase&& other) = default;
 
     /**
-     * \brief Pauses the phase's meters in order of their declaration
+     * \brief Starts the phase's meters in order of their declaration
      */
     void start() {
         start_meters();
@@ -152,14 +152,14 @@ public:
     }
 
     /**
-     * \brief Pauses the phase's meters in order of their declaration
+     * \brief Resumes the phase's meters in order of their declaration
      */
     void resume() {
         resume_meters();
     }
 
     /**
-     * \brief Pauses the phase's meters in reverse order of their declaration
+     * \brief Stops the phase's meters in reverse order of their declaration
      */
     void stop() {
         stop_meters();
