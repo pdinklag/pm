@@ -30,6 +30,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <thread>
 #include <nlohmann/json.hpp>
 #include <pm/concepts.hpp>
 #include <pm/malloc_callback.hpp>
@@ -85,6 +86,7 @@ public:
     }
 
 private:
+    std::mutex mutex_;
     bool active_;
 
     intmax_t current_;
@@ -97,6 +99,8 @@ private:
 
 protected:
     inline void on_alloc(size_t bytes) override {
+        std::lock_guard g(mutex_);
+
         current_ += bytes;
         if(current_ > 0) peak_ = std::max(peak_, (uintmax_t)current_);
 
@@ -105,6 +109,8 @@ protected:
     }
 
     inline void on_free(size_t bytes) override {
+        std::lock_guard g(mutex_);
+
         current_ -= bytes;
 
         ++free_num_;
@@ -121,7 +127,7 @@ protected:
     }
 
 public:
-    inline MallocCounter() : MallocCallback(), active_(false) {
+    inline MallocCounter() : MallocCallback(), mutex_(), active_(false) {
         reset();
     }
 
