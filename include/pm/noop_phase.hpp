@@ -118,7 +118,7 @@ public:
     /**
      * \brief No-op
      */
-    inline void append_child(NoopPhase&&) {}
+    inline void append_child(NoopPhase const&) {}
 
     /**
      * \brief Returns the default value for the given metric
