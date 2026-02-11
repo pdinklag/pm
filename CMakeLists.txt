@@ -11,8 +11,10 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -ggdb")
 add_library(pm INTERFACE)
 target_include_directories(pm INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-# add source directory
-add_subdirectory(src)
+# create library pm-malloc with malloc overrides
+add_library(pm-malloc ${CMAKE_CURRENT_SOURCE_DIR}/src/malloc_callback.cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/malloc_override.cpp)
+target_compile_definitions(pm-malloc PUBLIC PM_MALLOC)
+target_link_libraries(pm-malloc PUBLIC pm)
 
 # provide tests if standalone
 if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
