@@ -133,13 +133,13 @@ TEST_SUITE("pm_malloc") {
         phase.start();
         {
             char* array = new char[1024];
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
             delete[] array;
         }
         phase.stop();
 
-        CHECK(phase.meter<1>().elapsed_time_millis() >= 10);
-        CHECK(phase.meter<0>().peak() == 1024);
+        CHECK(phase.get_metric<pm::Stopwatch::ElapsedTimeMillisMetric>() >= 10);
+        CHECK(phase.get_metric<pm::MallocCounter::MemoryPeakMetric>() == 1024);
     }
 }
 

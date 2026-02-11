@@ -62,13 +62,13 @@ TEST_SUITE("pm") {
         phase.start();
         {
             char* array = new char[1024];
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
             delete[] array;
         }
         phase.stop();
 
-        CHECK(phase.meter<1>().elapsed_time_millis() >= 10);
-        CHECK(phase.meter<0>().peak() == 0); // nb: malloc override is disabled
+        CHECK(phase.get_metric<pm::Stopwatch::ElapsedTimeMillisMetric>() >= 10);
+        CHECK(phase.get_metric<pm::MallocCounter::MemoryPeakMetric>() == 0); // nb: malloc override is disabled
     }
 
     TEST_CASE("Result") {
