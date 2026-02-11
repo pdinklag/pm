@@ -2,6 +2,28 @@
 
 This library provides an extensible high-level API for measuring performance data of C++20 applications.
 
+## Usage
+
+**Brief**: Add `pm` or `pm-malloc` to your CMake target dependencies, depending on whether you want to link with or without memory allocation tracking.
+
+### Without Memory Allocation Tracking
+
+If you do not need memory allocation tracking, pm can be used as a header-only library.
+
+The library defines the interface target `pm`. Adding it as a dependency will automatically add the include directory to your target.
+
+Note that the `MallocCounter` meter can be used, so any code using it will remain compilable. All metrics will simply report zero.
+
+### With Memory Allocation Tracking
+
+If you do need memory allocation tracking, the library must be built with the `PM_MALLOC` macro defined and linked against. The easiest way to do this is to add the `pm-malloc` target to your CMake dependencies.
+
+**Memory allocation tracking adds a slight runtime overhead.** It is recommended to not even include it in any production builds. To deactivate it, simply link against `pm` *instead of* `pm-malloc` (see [Without Memory Allocation Tracking](#without-memory-allocation-tracking)).
+
+The runtime overhead stems from the fact that pm overrides `malloc` and friends, and does some bookkeeping for every allocation or free. While this is kept to a minimum and should not create much of an impact, to a small extent, it always will.
+
+You cannot use pm's memory allocation tracking together with any other library that overrides `malloc`. For example, it is not compatible to [malloc_count](https://github.com/bingmann/malloc_count) (but it provides the same core functionality, anyway). Furthermore, memory allocation tracking will not work if you run your application with `valgrind`.
+
 ## Documentation
 
 The governing concept of pm is *phase-based* measurements using *meters*. The programmer defines phases of their application during which a selection of meters measure performance data. Consider the following simple example, where we measure the memory allocations and the required time of a rather simple computation:
@@ -73,8 +95,6 @@ A `Phase` can therefore be considered a set of meters that also handles JSON dat
 
 Meters are activated in the order of their position in the template parameter pack, and deactivated in reverse order. For the `MemoryTimePhase`, this means that time measurement begins last and stops first. It has been implemented this way to minimize measuring any overhead.
 
-Meters can be used standalone, it is not necessary to attach them to a phase for them to work.
-
 #### Stopwatch
 
 The stopwatch is pretty much just that: it measures the timestamp at the beginning of the measurement and at the end. It uses the system's highest resolution clock, which typically delivers nanosecond precision.
@@ -86,6 +106,25 @@ The memory allocation counter tracks memory allocations and frees reported by pm
 **Your application must be built with memory allocation tracking enabled in order for this to work at all!**
 
 Please see [Usage with Memory Allocation Tracking](#with-memory-allocation-tracking) for details.
+
+#### Metric Access
+
+To programatically access measured metrics, the `Phase` class offers the function template `get_metric` that particular phases can specify.
+
+The following are the most common usecases:
+
+```cpp
+pm::MemoryTimePhase phase;
+{
+    // ... (lots of computation) ...
+}
+std::cout << "that took " << phase.get_metric<pm::Stopwatch::ElapsedTimeMillisMetric>() << " ms" << std::endl;
+std::cout << "peak memory use was " << phase.get_metric<pm::MallocCounter::MemoryPeakMetric>() << " bytes" << std::endl;
+```
+
+#### Standalone Use
+
+You can use meters like `pm::Stopwatch` and `pm::MallocCounter` outside of phases and work with them directly. Use the `start`, `stop`, `pause` and `resume` functions to control measurement and use either `get_metric` or class-specific getters to access the metrics.
 
 ### NoopPhase
 
@@ -208,28 +247,3 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-## Usage
-
-**Brief**: submodule pm and add `pm` or `pm-malloc` to your CMake target dependencies, depending on whether you want to link with or without memory allocation tracking.
-
----
-
-The recommended build environment is CMake and using pm as a submodule. Simply adding the corresponding targets as dependencies will set up your CMake targets for using pm.
-
-### Without Memory Allocation Tracking
-
-If you do not need memory allocation tracking, pm can be used as a header-only library.
-
-The library defines the interface target `pm`. Adding it as a dependency will automatically add the include directory to your target.
-
-Note that the `MallocCounter` meter can be used, so any code using it will remain compilable. All metrics will simply report zero.
-
-### With Memory Allocation Tracking
-
-If you do need memory allocation tracking, the library must be built with the `PM_MALLOC` macro defined and linked against. The easiest way to do this is to add the `pm-malloc` target to your CMake dependencies.
-
-**Memory allocation tracking adds a slight runtime overhead.** It is recommended to not even include it in any production builds. To deactivate it, simply link against `pm` *instead of* `pm-malloc` (see [Without Memory Allocation Tracking](#without-memory-allocation-tracking)).
-
-The runtime overhead stems from the fact that pm overrides `malloc` and friends, and does some bookkeeping for every allocation or free. While this is kept to a minimum and should not create much of an impact, to a small extent, it always will.
-
-You cannot use pm's memory allocation tracking together with any other library that overrides `malloc`. For example, it is not compatible to [malloc_count](https://github.com/bingmann/malloc_count) (but it provides the same core functionality, anyway). Furthermore, memory allocation tracking will not work if you run your application with `valgrind`.
